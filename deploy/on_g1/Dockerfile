@@ -70,7 +70,7 @@ RUN cd /catkin_ws/src && \
     find scripts -name "*.py" -exec sed -i 's|from Queue import|from queue import|g' {} \; && \
     find scripts -name "*.py" -exec sed -i 's|import Queue|import queue as Queue|g' {} \;
 
-COPY CLONE/deploy/onboard /catkin_ws/deploy_onboard
+COPY onboard /catkin_ws/deploy_onboard
 
 RUN sed -i '3s|cd nav/rosws/fastlio_localization|cd /catkin_ws|' /catkin_ws/deploy_onboard/localization_server.sh && \
     sed -i 's|cd \.\.|cd /catkin_ws|g' /catkin_ws/deploy_onboard/localization_server.sh && \

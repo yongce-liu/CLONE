@@ -1,6 +1,8 @@
 services:
   livox-driver:
-    build: .
+    build:
+      context: ..  # edit context dir as project root
+      dockerfile: on_g1/Dockerfile
     image: livox-ros-driver:latest
     container_name: on-g1
     network_mode: host
