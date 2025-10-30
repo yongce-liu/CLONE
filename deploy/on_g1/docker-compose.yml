@@ -1,7 +1,7 @@
 services:
   livox-driver:
     build:
-      context: ..  # 将构建上下文改为项目根目录
+      context: ..  # edit context dir as project root
       dockerfile: on_g1/Dockerfile
     image: livox-ros-driver:latest
     container_name: on-g1
