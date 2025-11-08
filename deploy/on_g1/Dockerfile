@@ -36,11 +36,12 @@ RUN pip config set global.index-url https://mirrors.ustc.edu.cn/pypi/simple
 # RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://mirrors.ustc.edu.cn/ros2/ubuntu $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 # RUN apt-get update
 # #####################################################################
-# # INSTALL ZSH
-# RUN apt-get install zsh git && chsh -s /bin/zsh
-# RUN DEBIAN_FRONTEND=noninteractive sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-# RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-# RUN sed -i 's/plugins=(git)/plugins=(git zsh-syntax-highlighting)/g' ~/.zshrc
+# INSTALL ZSH
+RUN apt-get install zsh git -y && chsh -s /bin/zsh
+RUN git clone https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh \
+    && cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc 
+RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+RUN sed -i 's/plugins=(git)/plugins=(git zsh-syntax-highlighting)/g' ~/.zshrc
 #####################################################################
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
