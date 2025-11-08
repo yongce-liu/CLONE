@@ -69,6 +69,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3-pip \
     python3-dev \
     python3-zmq \
+    tmux \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /catkin_ws/src
