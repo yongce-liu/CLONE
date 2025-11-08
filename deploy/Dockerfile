@@ -115,7 +115,7 @@ RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && \
     source /root/unitree_ros2/cyclonedds_ws/install/setup.bash && \
     colcon build --packages-ignore cyclonedds rmw_cyclonedds_cpp"
 
-RUN git clone https://github.com/humanoid-clone/CLONE.git /root/ws/CLONE
+RUN git clone https://github.com/yongce-liu/CLONE.git /root/ws/CLONE
 
 WORKDIR /root/ws/CLONE
 RUN pip3 install --upgrade pip
