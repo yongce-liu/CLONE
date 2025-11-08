@@ -1,6 +1,49 @@
 FROM ros:noetic-ros-base-focal
 
-RUN apt-get update && apt-get install -y \
+#####################################################################
+# FOR UBUNTU MIRRORS
+RUN sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list
+RUN sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+RUN apt-get update
+#####################################################################
+# FOR PYPI MIRRORS
+RUN apt-get install -y python3-pip
+RUN pip install -i https://mirrors.ustc.edu.cn/pypi/simple pip -U
+RUN pip config set global.index-url https://mirrors.ustc.edu.cn/pypi/simple
+#####################################################################
+# # FOR UV PIP
+# RUN touch ~/.config/uv/uv.toml
+# RUN echo "[[index]] \
+# url = "https://mirrors.ustc.edu.cn/pypi/simple" \
+# default = true" >> ~/.config/uv/uv.toml
+# #####################################################################
+# # FOR CONDA
+# RUN touch $HOME/.condarc
+# RUN echo "channels: \
+#   - nodefaults \
+# custom_channels: \
+#   conda-forge: https://mirrors.ustc.edu.cn/anaconda/cloud \
+#   bioconda: https://mirrors.ustc.edu.cn/anaconda/cloud \
+# show_channel_urls: true" >> $HOME/.condarc
+# #####################################################################
+# # FOR ROS 1 MIRRORS
+# RUN apt-get install -y gpg wget curl
+# RUN gpg --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+# RUN gpg --export C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 | tee /usr/share/keyrings/ros.gpg > /dev/null
+# RUN sh -c 'echo "deb [signed-by=/usr/share/keyrings/ros.gpg] https://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+# # FOR ROS 2 MIRRORS
+# RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+# RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://mirrors.ustc.edu.cn/ros2/ubuntu $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
+# RUN apt-get update
+# #####################################################################
+# # INSTALL ZSH
+# RUN apt-get install zsh git && chsh -s /bin/zsh
+# RUN DEBIAN_FRONTEND=noninteractive sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+# RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+# RUN sed -i 's/plugins=(git)/plugins=(git zsh-syntax-highlighting)/g' ~/.zshrc
+#####################################################################
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git \
     cmake \
     build-essential \
