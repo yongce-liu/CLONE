@@ -1,24 +1,22 @@
-#!/bin/bash
+#!/bin/zsh
+# Ensure a single fresh tmux session named "lio" with 1 window split into 3 panes
+tmux kill-session -t lio 2>/dev/null || true
+tmux new-session -d -s lio -n lio
 
-# Start a new tmux session (if it doesn't already exist)
-tmux new-session -d -s lio
+# Pane 0: localization
+tmux send-keys -t lio:0.0 'cd nav/rosws/fastlio_localization && source devel/setup.zsh && roslaunch fast_lio_localization localization_mid360.launch' C-m
+sleep 2
 
-# Window 1: Navigate to the localization directory and launch the ROS package
-tmux send-keys -t lio 'cd nav/rosws/fastlio_localization && source devel/setup.bash && roslaunch fast_lio_localization localization_mid360.launch' C-m
+# Split pane 0 horizontally -> creates pane 1
+tmux split-window -h -t lio:0.0
+tmux send-keys -t lio:0.1 'cd livox_ros_driver2 && source devel/setup.zsh && roslaunch livox_ros_driver2 msg_MID360.launch' C-m
+sleep 2
 
-# Wait for a while to ensure the first process starts
-sleep 3
+# Split the original left pane horizontally again -> creates pane 2 (three columns)
+tmux split-window -h -t lio:0.0
+tmux send-keys -t lio:0.2 'cd ~/teleoperation && python pos_server.py' C-m
+sleep 1
 
-# Window 2: Navigate to the driver directory and launch the Livox ROS driver
-tmux new-window -t lio:1 -n 'Livox ROS Driver'
-tmux send-keys -t lio:1 'cd livox_ros_driver2 && source devel/setup.bash && roslaunch livox_ros_driver2 msg_MID360.launch' C-m
-
-# Wait for a while to ensure the second process starts
-sleep 3
-
-# Window 3: Navigate to the teleoperation directory and run the Python server
-tmux new-window -t lio:2 -n 'Teleoperation'
-tmux send-keys -t lio:2 'cd ~/teleoperation && python pos_server.py' C-m
-
-# Attach to the tmux session
+# Arrange panes evenly and attach
+tmux select-layout -t lio:0 even-horizontal
 tmux attach-session -t lio
