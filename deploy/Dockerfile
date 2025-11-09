@@ -64,7 +64,7 @@ RUN echo -e "[[index]]\nurl = \"https://mirrors.ustc.edu.cn/pypi/simple\"\ndefau
 
 ENV DEBIAN_FRONTEND=noninteractive 
 ENV TZ=Etc/UTC
-RUN sudo apt-get update && sudo apt-get install -y \
+RUN apt-get update && apt-get install -y \
     curl \
     gnupg2 \
     lsb-release \
@@ -134,19 +134,19 @@ RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && \
     source ${HOME}/unitree_ros2/cyclonedds_ws/install/setup.bash && \
     colcon build --packages-ignore cyclonedds rmw_cyclonedds_cpp"
 
-# RUN git clone https://github.com/yongce-liu/CLONE.git ${HOME}/CLONE
+RUN git clone https://github.com/yongce-liu/CLONE.git ${HOME}/CLONE
 
-# WORKDIR ${HOME}/CLONE
-# RUN pip3 install --upgrade pip
-# RUN pip3 install --ignore-installed -r requirements.txt
-# RUN pip3 install pyzmq
-# RUN rm -rf ${HOME}/CLONE
+WORKDIR ${HOME}/CLONE
+RUN pip3 install --upgrade pip
+RUN pip3 install --ignore-installed -r requirements.txt
+RUN pip3 install pyzmq
+RUN rm -rf ${HOME}/CLONE
 
-# WORKDIR ${HOME}
-# RUN git clone https://github.com/Yutang-Lin/VisionWrapper.git
-# WORKDIR ${HOME}/VisionWrapper
-# RUN pip3 install -e .
-# ENV PYTHONPATH="${HOME}:${HOME}/VisionWrapper:${PYTHONPATH}"
+WORKDIR ${HOME}
+RUN git clone https://github.com/Yutang-Lin/VisionWrapper.git
+WORKDIR ${HOME}/VisionWrapper
+RUN pip3 install -e .
+ENV PYTHONPATH="${HOME}:${HOME}/VisionWrapper:${PYTHONPATH}"
 
 RUN echo "# ROS2 Environment Setup" >> /root/.zshrc && \
     echo "source /opt/ros/foxy/setup.zsh" >> /root/.zshrc && \
