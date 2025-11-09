@@ -162,14 +162,28 @@ RUN echo "# ROS2 Environment Setup" >> /root/.zshrc && \
     echo "echo 'Unitree ROS2 workspace loaded'" >> /root/.zshrc && \
     echo "echo 'VisionWrapper available'" >> /root/.zshrc
 
-RUN echo '#!/bin/zsh\n\
-source /opt/ros/foxy/setup.zsh\n\
-source /root/unitree_ros2/cyclonedds_ws/install/setup.zsh\n\
-source /root/unitree_ros2/install/setup.zsh\n\
-export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp\n\
-export PYTHONPATH=/root/ws:/root/ws/VisionWrapper:$PYTHONPATH\n\
-exec "$@"' > /ros_entrypoint.sh && \
-    chmod +x /ros_entrypoint.sh
+# ...existing code...
+RUN cat > /ros_entrypoint.sh <<'EOF'
+#!/bin/zsh
+source /opt/ros/foxy/setup.zsh
+source /root/unitree_ros2/cyclonedds_ws/install/setup.zsh
+source /root/unitree_ros2/install/setup.zsh
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export PYTHONPATH=/root/ws:/root/ws/VisionWrapper:$PYTHONPATH
+exec "$@"
+EOF
+RUN chmod +x /ros_entrypoint.sh
+
+# FOR CONDA xr teleoperation
+RUN apt-get install -y wget bzip2
+RUN mkdir $HOME/down && wget "https://mirrors.tuna.tsinghua.edu.cn/github-release/conda-forge/miniforge/LatestRelease/Miniforge3-Linux-x86_64.sh" -O $HOME/down/Miniforge3-Linux-x86_64.sh
+RUN bash ${HOME}/down/Miniforge3-Linux-x86_64.sh -b -p ${HOME}/miniforge3 
+ENV PATH=${HOME}/miniforge3/bin:$PATH
+RUN conda init zsh bash \
+    && mamba shell init --shell zsh
+RUN touch $HOME/.condarc && echo -e "channels:\n  - nodefaults\ncustom_channels:\n  conda-forge: https://mirrors.ustc.edu.cn/anaconda/cloud\n  bioconda: https://mirrors.ustc.edu.cn/anaconda/cloud\nshow_channel_urls: true" > $HOME/.condarc
+RUN conda config --set auto_activate_base false
+
 
 WORKDIR ${HOME}/CLONE
 
