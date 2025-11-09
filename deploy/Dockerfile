@@ -181,11 +181,11 @@ RUN bash ${HOME}/down/Miniforge3-Linux-x86_64.sh -b -p ${HOME}/miniforge3
 ENV PATH=${HOME}/miniforge3/bin:$PATH
 RUN conda init zsh bash \
     && mamba shell init --shell zsh
-RUN touch $HOME/.condarc && echo -e "channels:\n  - nodefaults\ncustom_channels:\n  conda-forge: https://mirrors.ustc.edu.cn/anaconda/cloud\n  bioconda: https://mirrors.ustc.edu.cn/anaconda/cloud\nshow_channel_urls: true" > $HOME/.condarc
-RUN conda config --set auto_activate_base false
+RUN touch $HOME/.condarc && echo -e "channels:\n  - nodefaults\ncustom_channels:\n  conda-forge: https://mirrors.ustc.edu.cn/anaconda/cloud\n  bioconda: https://mirrors.ustc.edu.cn/anaconda/cloud\nshow_channel_urls: true\nauto_activate: false" > $HOME/.condarc
+RUN ln -s /usr/bin/python3 /usr/bin/python
+ENV PATH=/usr/bin:$PATH
 
-
-WORKDIR ${HOME}/CLONE
+WORKDIR ${HOME}/ws
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/zsh"]
