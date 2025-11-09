@@ -1,7 +1,6 @@
 FROM ros:noetic-ros-base-focal
 
-ENV DEBIAN_FRONTEND=noninteractive 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git \
     cmake \
     build-essential \
@@ -99,8 +98,6 @@ RUN mkdir -p /catkin_ws/src/FAST_LIO_LOCALIZATION/launch && \
     sed -i 's/img\[p\[1\] - min_y, p\[0\] - min_x\]/img[int(p[1]) - min_y, int(p[0]) - min_x]/' /catkin_ws/deploy_onboard/read_pcd_publish.py && \
     sed -i '139a\    if len(points) == 0:\n        points = np.array([[0, 0, 0]], dtype=np.int32)' /catkin_ws/deploy_onboard/read_pcd_publish.py && \
     cp /catkin_ws/deploy_onboard/read_pcd_publish.py /catkin_ws/src/FAST_LIO_LOCALIZATION/scripts/ && \
-    # mkdir -p /catkin_ws/src/livox_ros_driver2/config && \
-    # echo '{"lidar_summary_info": {"lidar_type": 8}, "MID360": {"lidar_net_info": {"cmd_data_port": 56100, "push_msg_port": 56200, "point_data_port": 56300, "imu_data_port": 56400, "log_data_port": 56500}, "host_net_info": {"cmd_data_ip": "192.168.123.164", "cmd_data_port": 56101, "push_msg_ip": "192.168.123.164", "push_msg_port": 56201, "point_data_ip": "192.168.123.164", "point_data_port": 56301, "imu_data_ip": "192.168.123.164", "imu_data_port": 56401, "log_data_ip": "192.168.123.164", "log_data_port": 56501}}}' > /catkin_ws/src/livox_ros_driver2/config/MID360_config.json && \
     sed -i 's|python |python3 |g' /catkin_ws/deploy_onboard/localization_server.sh && \
     sed -i 's|python |python3 |g' /catkin_ws/deploy_onboard/pos_server.py && \
     find /catkin_ws/src/FAST_LIO_LOCALIZATION/scripts -name "*.py" -exec sed -i '1s|#!/usr/bin/env python2|#!/usr/bin/env python3|' {} \; && \
@@ -116,16 +113,8 @@ RUN cd /catkin_ws/src/FAST_LIO_LOCALIZATION && \
 RUN mkdir -p /home/unitree/teleoperation/nav/rosws/FAST_LIO_WS/src/FAST_LIO/PCD && \
     printf "# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nCOUNT 1 1 1\nWIDTH 3\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS 3\nDATA ascii\n0.0 0.0 0.0\n1.0 0.0 0.0\n0.0 1.0 0.0\n" > /home/unitree/teleoperation/nav/rosws/FAST_LIO_WS/src/FAST_LIO/PCD/scans.pcd
 
-RUN echo "#!/bin/bash" > /ros_entrypoint.sh && \
-    echo "source /opt/ros/noetic/setup.zsh" >> /ros_entrypoint.sh && \
-    echo "source /catkin_ws/devel/setup.zsh" >> /ros_entrypoint.sh && \
-    echo 'exec "$@"' >> /ros_entrypoint.sh && \
-    chmod +x /ros_entrypoint.sh
-
-RUN echo "#!/bin/bash" > ${HOME}/.zshrc && \
-    echo "source /opt/ros/noetic/setup.zsh" >> ${HOME}/.zshrc && \
-    echo "source /catkin_ws/devel/setup.zsh" >> ${HOME}/.zshrc && \
-    echo 'exec "$@"' >> ${HOME}/.zshrc
+RUN echo "source /opt/ros/noetic/setup.bash" >> ${HOME}/.bashrc && \
+    echo "source /catkin_ws/devel/setup.bash" >> ${HOME}/.bashrc
 
 # INSTALL ZSH
 RUN apt-get update && apt-get install zsh git tmux -y && chsh -s /bin/zsh
@@ -134,8 +123,14 @@ RUN git clone https://github.com/robbyrussell/oh-my-zsh.git ${HOME}/.oh-my-zsh \
 RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 RUN git clone https://github.com/zsh-users/zsh-autosuggestions.git ${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 RUN sed -i 's/plugins=(git)/plugins=(git zsh-syntax-highlighting zsh-autosuggestions)/g' ${HOME}/.zshrc
-SHELL [ "/bin/bash", "-c" ]
+RUN echo "#!/bin/zsh" > /ros_entrypoint.sh && \
+    echo "source /opt/ros/noetic/setup.zsh" >> /ros_entrypoint.sh && \
+    echo "source /catkin_ws/devel/setup.zsh" >> /ros_entrypoint.sh && \
+    echo 'exec "$@"' >> /ros_entrypoint.sh && \
+    chmod +x /ros_entrypoint.sh
+RUN echo "source /opt/ros/noetic/setup.zsh" >> ${HOME}/.zshrc && \
+    echo "source /catkin_ws/devel/setup.zsh" >> ${HOME}/.zshrc
 RUN ln -s /usr/bin/python3 /usr/bin/python
-ENV PATH=/usr/bin:$PATH
+
 ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["zsh"]
+CMD ["/bin/zsh"]
