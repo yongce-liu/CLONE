@@ -171,7 +171,7 @@ export PYTHONPATH=/root/ws:/root/ws/VisionWrapper:$PYTHONPATH\n\
 exec "$@"' > /ros_entrypoint.sh && \
     chmod +x /ros_entrypoint.sh
 
-# WORKDIR ${HOME}/CLONE
+WORKDIR ${HOME}/CLONE
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/zsh"]
