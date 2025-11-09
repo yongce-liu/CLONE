@@ -123,7 +123,7 @@ RUN echo "#!/bin/bash" > /ros_entrypoint.sh && \
     chmod +x /ros_entrypoint.sh
 
 # INSTALL ZSH
-RUN apt-get install zsh git -y && chsh -s /bin/zsh
+RUN apt-get update && apt-get install zsh git -y && chsh -s /bin/zsh
 RUN git clone https://github.com/robbyrussell/oh-my-zsh.git ${HOME}/.oh-my-zsh \
     && cp ${HOME}/.oh-my-zsh/templates/zshrc.zsh-template ${HOME}/.zshrc
 RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
