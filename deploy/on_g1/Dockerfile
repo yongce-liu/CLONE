@@ -117,8 +117,8 @@ RUN mkdir -p /home/unitree/teleoperation/nav/rosws/FAST_LIO_WS/src/FAST_LIO/PCD 
     printf "# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nCOUNT 1 1 1\nWIDTH 3\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS 3\nDATA ascii\n0.0 0.0 0.0\n1.0 0.0 0.0\n0.0 1.0 0.0\n" > /home/unitree/teleoperation/nav/rosws/FAST_LIO_WS/src/FAST_LIO/PCD/scans.pcd
 
 RUN echo "#!/bin/bash" > /ros_entrypoint.sh && \
-    echo "source /opt/ros/noetic/setup.bash" >> /ros_entrypoint.sh && \
-    echo "source /catkin_ws/devel/setup.bash" >> /ros_entrypoint.sh && \
+    echo "source /opt/ros/noetic/setup.zsh" >> /ros_entrypoint.sh && \
+    echo "source /catkin_ws/devel/setup.zsh" >> /ros_entrypoint.sh && \
     echo 'exec "$@"' >> /ros_entrypoint.sh && \
     chmod +x /ros_entrypoint.sh
 
