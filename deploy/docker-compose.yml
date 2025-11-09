@@ -1,13 +1,8 @@
 services:
   clone-server:
-    user: ${DOCKER_UID}:${DOCKER_GID}
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - DOCKER_UID=${DOCKER_UID:-1000}
-        - DOCKER_GID=${DOCKER_GID:-1000}
-        - DOCKER_USER=${DOCKER_USER:-user}
     image: clone-unitree:ubuntu20.04
     container_name: clone_unitree_server
     network_mode: host
@@ -15,8 +10,8 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ../:/home/${DOCKER_USER}/CLONE:rw
-      - ./:/home/${DOCKER_USER}/deploy:rw
+      - ../:/root/ws/CLONE:rw
+      - ./:/root/ws/deploy:rw
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ~/.Xauthority:/root/.Xauthority:rw
     environment:
