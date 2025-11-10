@@ -1,3 +1,3 @@
 [submodule "deploy/teleop/VisionWrapper"]
 	path = deploy/teleop/VisionWrapper
-	url = https://github.com/Yutang-Lin/VisionWrapper.git
+	url = https://github.com/yongce-liu/VisionWrapper.git
