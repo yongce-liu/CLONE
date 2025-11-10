@@ -144,34 +144,31 @@ RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && \
 
 # RUN git clone https://github.com/humanoid-clone/CLONE.git /root/ws/CLONE
 
-RUN mkdir -p /root/ws
-COPY ./requirements.txt /root/ws
-WORKDIR /root/ws
+COPY ./requirements.txt /tmp
 RUN pip3 install --upgrade pip
-RUN pip3 install --ignore-installed -r requirements.txt
+RUN pip3 install --ignore-installed -r /tmp/requirements.txt
 RUN pip3 install pyzmq
-RUN rm -rf /root/ws/requirements.txt
 
-WORKDIR /root/ws
-RUN git clone https://github.com/Yutang-Lin/VisionWrapper.git
-WORKDIR /root/ws/VisionWrapper
-RUN pip3 install -e .
-ENV PYTHONPATH="/root/ws:/root/ws/VisionWrapper:${PYTHONPATH}"
+# WORKDIR /root/ws
+# RUN git clone https://github.com/Yutang-Lin/VisionWrapper.git
+# WORKDIR /root/ws/VisionWrapper
+# RUN pip3 install -e .
+# ENV PYTHONPATH="/root/ws:/root/ws/VisionWrapper:${PYTHONPATH}"
 
 RUN touch ${HOME}/.selfshrc
 RUN echo "# ROS2 Environment Setup" >> ${HOME}/.selfshrc && \
     echo "source /opt/ros/foxy/setup.sh" >> ${HOME}/.selfshrc && \
-    echo "source /root/unitree_ros2/cyclonedds_ws/install/setup.sh" >> ${HOME}/.selfshrc && \
-    echo "source /root/unitree_ros2/install/setup.sh" >> ${HOME}/.selfshrc && \
-    echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ${HOME}/.selfshrc && \
-    echo "export PYTHONPATH=/root/ws:/root/ws/VisionWrapper:\$PYTHONPATH" >> ${HOME}/.selfshrc && \
+    # echo "source /root/unitree_ros2/cyclonedds_ws/install/setup.sh" >> ${HOME}/.selfshrc && \
+    # echo "source /root/unitree_ros2/install/setup.sh" >> ${HOME}/.selfshrc && \
+    # echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ${HOME}/.selfshrc && \
+    # echo "export PYTHONPATH=/root/ws:/root/ws/VisionWrapper:\$PYTHONPATH" >> ${HOME}/.selfshrc && \
     echo "# Aliases for convenience" >> ${HOME}/.selfshrc && \
     echo "alias ll='ls -alF'" >> ${HOME}/.selfshrc && \
     echo "alias la='ls -A'" >> ${HOME}/.selfshrc && \
-    echo "alias l='ls -CF'" >> ${HOME}/.selfshrc && \
-    echo "echo 'ROS2 Foxy environment loaded'" >> ${HOME}/.selfshrc && \
-    echo "echo 'Unitree ROS2 workspace loaded'" >> ${HOME}/.selfshrc && \
-    echo "echo 'VisionWrapper available'" >> ${HOME}/.selfshrc
+    echo "alias l='ls -CF'" >> ${HOME}/.selfshrc
+    # echo "echo 'ROS2 Foxy environment loaded'" >> ${HOME}/.selfshrc && \
+    # echo "echo 'Unitree ROS2 workspace loaded'" >> ${HOME}/.selfshrc && \
+    # echo "echo 'VisionWrapper available'" >> ${HOME}/.selfshrc
 RUN echo "source ${HOME}/.selfshrc" >> ${HOME}/.zshrc && \
     echo "source ${HOME}/.selfshrc" >> ${HOME}/.bashrc
 
@@ -187,7 +184,7 @@ RUN echo "source ${HOME}/.selfshrc" >> ${HOME}/.zshrc && \
 # EOF
 # RUN chmod +x /ros_entrypoint.sh
 
-WORKDIR /root/ws
+WORKDIR /root
 
 # ENTRYPOINT /ros_entrypoint.sh
 CMD ["/bin/bash"]
