@@ -52,10 +52,10 @@
     
 #     # Select points at feature height and convert to 2D occupancy map
 #     points = np.asarray(pcd.points)
-#     min_x = points[:, 0].min()
-#     max_x = points[:, 0].max()
-#     min_y = points[:, 1].min()
-#     max_y = points[:, 1].max()
+#     min_x = int(points[:, 0].min()) if len(points) > 0 else 0
+#     max_x = int(points[:, 0].max()) if len(points) > 0 else 1
+#     min_y = int(points[:, 1].min()) if len(points) > 0 else 0
+#     max_y = int(points[:, 1].max()) if len(points) > 0 else 1
 #     points = points[points[:, 2] > 0.5]
 #     points = points[points[:, 2] < 1]
 #     points = points * 10
@@ -137,18 +137,20 @@ def publish_downsampled_pcd(pcd_file_path, publish_topic, map_topic, resolution)
     points = points[(points[:, 2] > 0.5) & (points[:, 2] < 1)]
     points = points / resolution
     points = points.astype(np.int32)
+    if len(points) == 0:
+        points = np.array([[0, 0, 0]], dtype=np.int32)
     
     # Get length and width
-    min_x = points[:, 0].min()
-    max_x = points[:, 0].max()
-    min_y = points[:, 1].min()
-    max_y = points[:, 1].max()
-    width = max_x - min_x + 5
-    height = max_y - min_y + 5
+    min_x = int(points[:, 0].min()) if len(points) > 0 else 0
+    max_x = int(points[:, 0].max()) if len(points) > 0 else 1
+    min_y = int(points[:, 1].min()) if len(points) > 0 else 0
+    max_y = int(points[:, 1].max()) if len(points) > 0 else 1
+    width = int(max_x - min_x + 5)
+    height = int(max_y - min_y + 5)
     
     img = np.zeros((height, width), dtype=np.uint8)
     for p in points:
-        img[p[1] - min_y, p[0] - min_x] += 1
+        img[int(p[1]) - min_y, int(p[0]) - min_x] += 1
     
     # Convert image to OccupancyGrid message
     occupancy_grid = image_to_occupancy_grid(img, min_x, min_y, resolution)

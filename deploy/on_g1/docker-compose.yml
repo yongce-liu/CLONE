@@ -9,8 +9,12 @@ services:
     privileged: true
     volumes:
       - /dev:/dev
-      - ./config:/catkin_ws/src/livox_ros_driver2/config
-      - ./launch:/catkin_ws/src/livox_ros_driver2/launch
+      - ./config:/catkin_ws/src/livox_ros_driver2/config:rw
+      # - ./launch:/catkin_ws/src/livox_ros_driver2/launch
+      - ../on_board:/catkin_ws/deploy_onboard:rw
+      - ../on_board/launch:/catkin_ws/src/FAST_LIO_LOCALIZATION/launch
+      - ../on_board/misc:/catkin_ws/src/FAST_LIO_LOCALIZATION/config/
+      - ../on_board/read_pcd_publish.py:/catkin_ws/src/FAST_LIO_LOCALIZATION/scripts/read_pcd_publish.py
     environment:
       - ROS_MASTER_URI=http://localhost:11311
       - ROS_IP=127.0.0.1
