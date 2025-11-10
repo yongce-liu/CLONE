@@ -1,10 +1,15 @@
 FROM ubuntu:20.04
 
 #####################################################################
-# FOR UBUNTU MIRRORS
+# FOR UBUNTU MIRRORS AMD
 RUN sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list && \
     sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
     apt-get update && apt-get upgrade -y
+# #  FOR UBUNTU MIRRORS ARM
+# RUN sed -i -e 's@//ports.ubuntu.com/\? @//ports.ubuntu.com/ubuntu-ports @g' \
+#             -e 's@//ports.ubuntu.com@//mirrors.ustc.edu.cn@g' \
+#             /etc/apt/sources.list && \
+#     apt-get update && apt-get upgrade -y
 # #####################################################################
 # FOR ROS 1 MIRRORS
 RUN apt-get update && apt-get install -y gpg lsb-release curl && \
