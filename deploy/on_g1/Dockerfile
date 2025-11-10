@@ -5,21 +5,21 @@ FROM ros:noetic-ros-base-focal
 # RUN sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list && \
 #     sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
 #     apt-get update && apt-get upgrade -y
-#  FOR UBUNTU MIRRORS ARM
-RUN sed -i -e 's@//ports.ubuntu.com/\? @//ports.ubuntu.com/ubuntu-ports @g' \
-            -e 's@//ports.ubuntu.com@//mirrors.ustc.edu.cn@g' \
-            /etc/apt/sources.list && \
-    apt-get update && apt-get upgrade -y
+# #  FOR UBUNTU MIRRORS ARM
+# RUN sed -i -e 's@//ports.ubuntu.com/\? @//ports.ubuntu.com/ubuntu-ports @g' \
+#             -e 's@//ports.ubuntu.com@//mirrors.ustc.edu.cn@g' \
+#             /etc/apt/sources.list && \
+#     apt-get update && apt-get upgrade -y
 # #####################################################################
-# FOR ROS 1 MIRRORS
-RUN apt-get update && apt-get install -y gpg lsb-release curl && \
-    gpg --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
-    gpg --export C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 | tee /usr/share/keyrings/ros.gpg > /dev/null && \
-    sh -c 'echo "deb [signed-by=/usr/share/keyrings/ros.gpg] https://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-# FOR ROS 2 MIRRORS
-RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://mirrors.ustc.edu.cn/ros2/ubuntu $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
-    apt-get update
+# # FOR ROS 1 MIRRORS
+# RUN apt-get update && apt-get install -y gpg lsb-release curl && \
+#     gpg --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 && \
+#     gpg --export C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 | tee /usr/share/keyrings/ros.gpg > /dev/null && \
+#     sh -c 'echo "deb [signed-by=/usr/share/keyrings/ros.gpg] https://mirrors.ustc.edu.cn/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+# # FOR ROS 2 MIRRORS
+# RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+#     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://mirrors.ustc.edu.cn/ros2/ubuntu $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
+#     apt-get update
 ######################################################################
 # # FOR INSTALLATION
 # ARG DOCKER_UID=1000
@@ -197,7 +197,7 @@ RUN cd /catkin_ws/src/FAST_LIO_LOCALIZATION && \
 RUN touch ${HOME}/.selfshrc
 RUN echo "# ROS2 Environment Setup" >> ${HOME}/.selfshrc && \
     echo "source /opt/ros/noetic/setup.sh" >> ${HOME}/.selfshrc && \
-    echo "source /catkin_ws/devel/setup.bash" >> ${HOME}/.selfshrc && \
+    echo "source /catkin_ws/devel/setup.sh" >> ${HOME}/.selfshrc
 RUN echo "source ${HOME}/.selfshrc" >> ${HOME}/.zshrc && \
     echo "source ${HOME}/.selfshrc" >> ${HOME}/.bashrc
     
