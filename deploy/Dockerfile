@@ -65,6 +65,7 @@ RUN apt-get install -y wget bzip2 && \
 RUN PATH=${HOME}/miniforge3/bin:$PATH && \
     conda init zsh bash && \
     mamba shell init --shell zsh && \
+    mamba shell init --shell bash && \
     touch $HOME/.condarc && echo -e "channels:\n  - nodefaults\ncustom_channels:\n  conda-forge: https://mirrors.ustc.edu.cn/anaconda/cloud\n  bioconda: https://mirrors.ustc.edu.cn/anaconda/cloud\nshow_channel_urls: true\nauto_activate: false" > $HOME/.condarc
 # ENV PATH=/usr/bin:/usr/local/bin:$PATH
 # RUN ln -s /usr/bin/python3 /usr/bin/python
