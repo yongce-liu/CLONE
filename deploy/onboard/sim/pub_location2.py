@@ -6,13 +6,14 @@ from geometry_msgs.msg import Point, Quaternion, Twist
 from std_msgs.msg import Header
 import random
 
+
 class LocalizationPublisher:
     def __init__(self):
         # 初始化 ROS 节点
-        rospy.init_node('localization_publisher', anonymous=True)
+        rospy.init_node("localization_publisher", anonymous=True)
 
         # 创建发布者，发布到 /localization 话题，消息类型是 Odometry
-        self.publisher = rospy.Publisher('/localization', Odometry, queue_size=10)
+        self.publisher = rospy.Publisher("/localization", Odometry, queue_size=10)
 
         # 设置循环频率
         self.rate = rospy.Rate(10)  # 10Hz
@@ -27,10 +28,14 @@ class LocalizationPublisher:
         odom_msg.header.frame_id = "odom"
 
         # 设置位置 (x, y, z)
-        odom_msg.pose.pose.position = Point(random.uniform(-5.0, 5.0), random.uniform(-5.0, 5.0), 0.0)
+        odom_msg.pose.pose.position = Point(
+            random.uniform(-5.0, 5.0), random.uniform(-5.0, 5.0), 0.0
+        )
 
         # 设置方向 (四元数表示)
-        odom_msg.pose.pose.orientation = Quaternion(0.0, 0.0, random.uniform(-1.0, 1.0), 1.0)
+        odom_msg.pose.pose.orientation = Quaternion(
+            0.0, 0.0, random.uniform(-1.0, 1.0), 1.0
+        )
 
         # 设置线性速度（x, y, z）
         odom_msg.twist.twist.linear.x = random.uniform(0.0, 1.0)
@@ -52,7 +57,8 @@ class LocalizationPublisher:
             self.publisher.publish(odom_msg)
             self.rate.sleep()  # 控制发布频率
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         # 创建发布者对象并开始发布消息
         localization_publisher = LocalizationPublisher()

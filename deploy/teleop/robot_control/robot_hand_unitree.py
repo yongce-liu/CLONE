@@ -512,6 +512,7 @@ class Gripper_JointIndex(IntEnum):
 
 if __name__ == "__main__":
     import argparse
+
     # from teleop.open_television.tv_wrapper import TeleVisionWrapper
     from visionwrapper.television import TeleVision
     from teleop.image_server.image_client import ImageClient
