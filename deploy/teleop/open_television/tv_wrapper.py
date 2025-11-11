@@ -64,8 +64,9 @@ under (basis) Robot Convention, hand's initial pose convention:
     p.s. **(Wrist/Hand URDF) Unitree Convention** information come from URDF files.
 """
 
+
 class TeleVisionWrapper:
-    def __init__(self, binocular, img_shape, img_shm_name, avp_ip='192.168.123.101'):
+    def __init__(self, binocular, img_shape, img_shm_name, avp_ip="192.168.123.101"):
         # self.tv = TeleVision(binocular, img_shape, img_shm_name)
         self.tv = VisionProStreamer(ip=avp_ip, record=False)
 
@@ -75,8 +76,12 @@ class TeleVisionWrapper:
 
         # TeleVision obtains a basis coordinate that is OpenXR Convention
         head_vuer_mat = mat_update(const_head_vuer_mat, self.tv.head_matrix.copy())
-        left_wrist_vuer_mat  = mat_update(const_left_wrist_vuer_mat, self.tv.left_hand.copy())
-        right_wrist_vuer_mat = mat_update(const_right_wrist_vuer_mat, self.tv.right_hand.copy())
+        left_wrist_vuer_mat = mat_update(
+            const_left_wrist_vuer_mat, self.tv.left_hand.copy()
+        )
+        right_wrist_vuer_mat = mat_update(
+            const_right_wrist_vuer_mat, self.tv.right_hand.copy()
+        )
 
         # Change basis convention: VuerMat ((basis) OpenXR Convention) to WristMat ((basis) Robot Convention)
         # p.s. WristMat = T_{robot}_{openxr} * VuerMat * T_{robot}_{openxr}^T
@@ -90,17 +95,21 @@ class TeleVisionWrapper:
         #   - finally, transform back to the Robot Convention (The function of T_{robot}_{openxr})
         #   This results in the same rotation effect under the Robot Convention as in the OpenXR Convention.
         head_mat = T_robot_openxr @ head_vuer_mat @ fast_mat_inv(T_robot_openxr)
-        left_wrist_mat  = T_robot_openxr @ left_wrist_vuer_mat @ fast_mat_inv(T_robot_openxr)
-        right_wrist_mat = T_robot_openxr @ right_wrist_vuer_mat @ fast_mat_inv(T_robot_openxr)
+        left_wrist_mat = (
+            T_robot_openxr @ left_wrist_vuer_mat @ fast_mat_inv(T_robot_openxr)
+        )
+        right_wrist_mat = (
+            T_robot_openxr @ right_wrist_vuer_mat @ fast_mat_inv(T_robot_openxr)
+        )
 
         # Change wrist convention: WristMat ((Left Wrist) XR/AppleVisionPro Convention) to UnitreeWristMat((Left Wrist URDF) Unitree Convention)
         # Reason for right multiply (T_to_unitree_left_wrist) : Rotate 90 degrees counterclockwise about its own x-axis.
         # Reason for right multiply (T_to_unitree_right_wrist): Rotate 90 degrees clockwise about its own x-axis.
-        unitree_left_wrist  = left_wrist_mat @ T_to_unitree_left_wrist
+        unitree_left_wrist = left_wrist_mat @ T_to_unitree_left_wrist
         unitree_right_wrist = right_wrist_mat @ T_to_unitree_right_wrist
 
         # Transfer from WORLD to HEAD coordinate (translation only).
-        unitree_left_wrist[0:3, 3]  = unitree_left_wrist[0:3, 3] - head_mat[0:3, 3]
+        unitree_left_wrist[0:3, 3] = unitree_left_wrist[0:3, 3] - head_mat[0:3, 3]
         unitree_right_wrist[0:3, 3] = unitree_right_wrist[0:3, 3] - head_mat[0:3, 3]
 
         # --------------------------------hand-------------------------------------
@@ -112,28 +121,38 @@ class TeleVisionWrapper:
         #    y0 y1 y1 ··· y23 y24
         #    z0 z1 z2 ··· z23 z24
         #     1  1  1 ···   1   1
-        left_hand_vuer_mat  = np.concatenate([self.tv.left_landmarks.copy().T, np.ones((1, self.tv.left_landmarks.shape[0]))])
-        right_hand_vuer_mat = np.concatenate([self.tv.right_landmarks.copy().T, np.ones((1, self.tv.right_landmarks.shape[0]))])
+        left_hand_vuer_mat = np.concatenate(
+            [
+                self.tv.left_landmarks.copy().T,
+                np.ones((1, self.tv.left_landmarks.shape[0])),
+            ]
+        )
+        right_hand_vuer_mat = np.concatenate(
+            [
+                self.tv.right_landmarks.copy().T,
+                np.ones((1, self.tv.right_landmarks.shape[0])),
+            ]
+        )
 
         # Change basis convention: from (basis) OpenXR Convention to (basis) Robot Convention
         # Just a change of basis for 3D points. No rotation, only translation. No need to right-multiply fast_mat_inv(T_robot_openxr).
-        left_hand_mat  = T_robot_openxr @ left_hand_vuer_mat
+        left_hand_mat = T_robot_openxr @ left_hand_vuer_mat
         right_hand_mat = T_robot_openxr @ right_hand_vuer_mat
 
         # Transfer from WORLD to WRIST coordinate. (this process under (basis) Robot Convention)
         # p.s.  HandMat_WristBased = WristMat_{wrold}_{wrist}^T * HandMat_{wrold}
         #       HandMat_WristBased = WristMat_{wrist}_{wrold}   * HandMat_{wrold}, that is HandMat_{wrist}
-        left_hand_mat_wb  = fast_mat_inv(left_wrist_mat) @ left_hand_mat
+        left_hand_mat_wb = fast_mat_inv(left_wrist_mat) @ left_hand_mat
         right_hand_mat_wb = fast_mat_inv(right_wrist_mat) @ right_hand_mat
         # Change hand convention: HandMat ((Left Hand) XR/AppleVisionPro Convention) to UnitreeHandMat((Left Hand URDF) Unitree Convention)
-        # Reason for left multiply : T_to_unitree_hand @ left_hand_mat_wb ==> (4,4) @ (4,25) ==> (4,25), (4,25)[0:3, :] ==> (3,25), (3,25).T ==> (25,3)           
+        # Reason for left multiply : T_to_unitree_hand @ left_hand_mat_wb ==> (4,4) @ (4,25) ==> (4,25), (4,25)[0:3, :] ==> (3,25), (3,25).T ==> (25,3)
         # Now under (Left Hand URDF) Unitree Convention, mat shape like this:
         #    [x0, y0, z0]
         #    [x1, y1, z1]
         #    ···
-        #    [x23,y23,z23] 
-        #    [x24,y24,z24]               
-        unitree_left_hand  = (T_to_unitree_hand @ left_hand_mat_wb)[0:3, :].T
+        #    [x23,y23,z23]
+        #    [x24,y24,z24]
+        unitree_left_hand = (T_to_unitree_hand @ left_hand_mat_wb)[0:3, :].T
         unitree_right_hand = (T_to_unitree_hand @ right_hand_mat_wb)[0:3, :].T
 
         # --------------------------------offset-------------------------------------
@@ -141,13 +160,18 @@ class TeleVisionWrapper:
         head_rmat = head_mat[:3, :3]
         # The origin of the coordinate for IK Solve is the WAIST joint motor. You can use teleop/robot_control/robot_arm_ik.py Unit_Test to check it.
         # The origin of the coordinate of unitree_left_wrist is HEAD. So it is necessary to translate the origin of unitree_left_wrist from HEAD to WAIST.
-        unitree_left_wrist[0, 3] +=0.15
-        unitree_right_wrist[0,3] +=0.15
-        unitree_left_wrist[2, 3] +=0.45
-        unitree_right_wrist[2,3] +=0.45
+        unitree_left_wrist[0, 3] += 0.15
+        unitree_right_wrist[0, 3] += 0.15
+        unitree_left_wrist[2, 3] += 0.45
+        unitree_right_wrist[2, 3] += 0.45
 
-        return head_rmat, unitree_left_wrist, unitree_right_wrist, unitree_left_hand, unitree_right_hand
-    
+        return (
+            head_rmat,
+            unitree_left_wrist,
+            unitree_right_wrist,
+            unitree_left_hand,
+            unitree_right_hand,
+        )
 
     def get_data_full(self):
 
@@ -160,17 +184,21 @@ class TeleVisionWrapper:
         data = self.tv.latest
         if data is None:
             return
-        
-        head_mat = data['head'][0].copy()
-        left_wrist_mat = data['left_wrist'][0].copy()
-        right_wrist_mat = data['right_wrist'][0].copy()
+
+        head_mat = data["head"][0].copy()
+        left_wrist_mat = data["left_wrist"][0].copy()
+        right_wrist_mat = data["right_wrist"][0].copy()
 
         head_mat = T_z_90 @ head_mat @ T_z_90.T
         left_wrist_mat = T_z_90 @ left_wrist_mat @ T_x_180.T
         right_wrist_mat = T_z_90 @ right_wrist_mat @ T_z_180.T
 
-        left_hand_mat = np.einsum('bik,bkj->bij', T_flip_left, data['left_fingers'].copy())
-        right_hand_mat = np.einsum('bik,bkj->bij', T_flip_right, data['right_fingers'].copy())
+        left_hand_mat = np.einsum(
+            "bik,bkj->bij", T_flip_left, data["left_fingers"].copy()
+        )
+        right_hand_mat = np.einsum(
+            "bik,bkj->bij", T_flip_right, data["right_fingers"].copy()
+        )
         # print(left_hand_mat[4, :3, 3])
 
         return head_mat, left_wrist_mat, right_wrist_mat, left_hand_mat, right_hand_mat

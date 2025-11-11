@@ -3,34 +3,38 @@ from pathlib import Path
 import yaml
 from enum import Enum
 
+
 class HandType(Enum):
     INSPIRE_HAND = "resources/inspire_hand/inspire_hand.yml"
     UNITREE_DEX3 = "resources/unitree_hand/unitree_dex3.yml"
     UNITREE_DEX3_Unit_Test = "resources/unitree_hand/unitree_dex3.yml"
 
+
 class HandRetargeting:
     def __init__(self, hand_type: HandType):
         if hand_type == HandType.UNITREE_DEX3:
-            RetargetingConfig.set_default_urdf_dir('resources')
+            RetargetingConfig.set_default_urdf_dir("resources")
         elif hand_type == HandType.UNITREE_DEX3_Unit_Test:
-            RetargetingConfig.set_default_urdf_dir('resources')
+            RetargetingConfig.set_default_urdf_dir("resources")
         elif hand_type == HandType.INSPIRE_HAND:
-            RetargetingConfig.set_default_urdf_dir('resources')
+            RetargetingConfig.set_default_urdf_dir("resources")
 
         config_file_path = Path(hand_type.value)
 
         try:
-            with config_file_path.open('r') as f:
+            with config_file_path.open("r") as f:
                 self.cfg = yaml.safe_load(f)
-                
-            if 'left' not in self.cfg or 'right' not in self.cfg:
-                raise ValueError("Configuration file must contain 'left' and 'right' keys.")
 
-            left_retargeting_config = RetargetingConfig.from_dict(self.cfg['left'])
-            right_retargeting_config = RetargetingConfig.from_dict(self.cfg['right'])
+            if "left" not in self.cfg or "right" not in self.cfg:
+                raise ValueError(
+                    "Configuration file must contain 'left' and 'right' keys."
+                )
+
+            left_retargeting_config = RetargetingConfig.from_dict(self.cfg["left"])
+            right_retargeting_config = RetargetingConfig.from_dict(self.cfg["right"])
             self.left_retargeting = left_retargeting_config.build()
             self.right_retargeting = right_retargeting_config.build()
-        
+
         except FileNotFoundError:
             print(f"Configuration file not found: {config_file_path}")
             raise

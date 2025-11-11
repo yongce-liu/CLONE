@@ -13,12 +13,13 @@ from unitree_hg.msg import (
     HandCmd,
 )
 
-unitree_tip_indices = [4, 9, 14] # [thumb, index, middle] in OpenXR
+unitree_tip_indices = [4, 9, 14]  # [thumb, index, middle] in OpenXR
 Dex3_Num_Motors = 7
 kTopicDex3LeftCommand = "dex3/left/cmd"
 kTopicDex3RightCommand = "dex3/right/cmd"
 kTopicDex3LeftState = "dex3/left/state"
 kTopicDex3RightState = "dex3/right/state"
+
 
 class Dex3_1_Left_JointIndex(IntEnum):
     kLeftHandThumb0 = 0
@@ -29,6 +30,7 @@ class Dex3_1_Left_JointIndex(IntEnum):
     kLeftHandIndex0 = 5
     kLeftHandIndex1 = 6
 
+
 class Dex3_1_Right_JointIndex(IntEnum):
     kRightHandThumb0 = 0
     kRightHandThumb1 = 1
@@ -38,6 +40,7 @@ class Dex3_1_Right_JointIndex(IntEnum):
     kRightHandMiddle0 = 5
     kRightHandMiddle1 = 6
 
+
 class _RIS_Mode:
     def __init__(self, id=0, status=0x01, timeout=0):
         self.motor_mode = 0
@@ -46,16 +49,21 @@ class _RIS_Mode:
         self.timeout = timeout & 0x01  # 1 bit for timeout
 
     def _mode_to_uint8(self):
-        self.motor_mode |= (self.id & 0x0F)
+        self.motor_mode |= self.id & 0x0F
         self.motor_mode |= (self.status & 0x07) << 4
         self.motor_mode |= (self.timeout & 0x01) << 7
         return self.motor_mode
 
+
 class DexNode(Node):
     def __init__(self):
         super().__init__("dex_node")  # type: ignore
-        self.left_hand_sub = self.create_subscription(HandState, 'dex3/left/state', self.left_dex_hand_cb, 1)
-        self.right_hand_sub = self.create_subscription(HandState, 'dex3/right/state', self.right_dex_hand_cb, 1)
+        self.left_hand_sub = self.create_subscription(
+            HandState, "dex3/left/state", self.left_dex_hand_cb, 1
+        )
+        self.right_hand_sub = self.create_subscription(
+            HandState, "dex3/right/state", self.right_dex_hand_cb, 1
+        )
 
         self.left_hand_pos = np.zeros(7)
         self.right_hand_pos = np.zeros(7)
@@ -73,30 +81,46 @@ class DexNode(Node):
 
         # initialize dex3-1's left hand cmd msg
         for id in Dex3_1_Left_JointIndex:
-            ris_mode = _RIS_Mode(id = id, status = 0x01)
+            ris_mode = _RIS_Mode(id=id, status=0x01)
             motor_mode = ris_mode._mode_to_uint8()
             self.left_hand_cmd.motor_cmd[id].mode = motor_mode
-            self.left_hand_cmd.motor_cmd[id].q    = q
-            self.left_hand_cmd.motor_cmd[id].dq   = dq
-            self.left_hand_cmd.motor_cmd[id].tau  = tau
-            self.left_hand_cmd.motor_cmd[id].kp   = kp
-            self.left_hand_cmd.motor_cmd[id].kd   = kd
+            self.left_hand_cmd.motor_cmd[id].q = q
+            self.left_hand_cmd.motor_cmd[id].dq = dq
+            self.left_hand_cmd.motor_cmd[id].tau = tau
+            self.left_hand_cmd.motor_cmd[id].kp = kp
+            self.left_hand_cmd.motor_cmd[id].kd = kd
 
         # initialize dex3-1's right hand cmd msg
         for id in Dex3_1_Right_JointIndex:
-            ris_mode = _RIS_Mode(id = id, status = 0x01)
+            ris_mode = _RIS_Mode(id=id, status=0x01)
             motor_mode = ris_mode._mode_to_uint8()
-            self.right_hand_cmd.motor_cmd[id].mode = motor_mode  
-            self.right_hand_cmd.motor_cmd[id].q    = q
-            self.right_hand_cmd.motor_cmd[id].dq   = dq
-            self.right_hand_cmd.motor_cmd[id].tau  = tau
-            self.right_hand_cmd.motor_cmd[id].kp   = kp
-            self.right_hand_cmd.motor_cmd[id].kd   = kd
+            self.right_hand_cmd.motor_cmd[id].mode = motor_mode
+            self.right_hand_cmd.motor_cmd[id].q = q
+            self.right_hand_cmd.motor_cmd[id].dq = dq
+            self.right_hand_cmd.motor_cmd[id].tau = tau
+            self.right_hand_cmd.motor_cmd[id].kp = kp
+            self.right_hand_cmd.motor_cmd[id].kd = kd
 
-        self.dex_limit_left_lo = np.array([-1.04719755, -0.72431163, 0., -1.57079632, -1.74532925, -1.57079632, -1.74532925])
-        self.dex_limit_left_hi = np.array([1.04719755, 1.04719755, 1.74532925, 0, 0, 0, 0])
-        self.dex_limit_right_lo = np.array([-1.04719755, -1.04719755, -1.74532925, 0, 0, 0, 0])
-        self.dex_limit_right_hi = np.array([1.04719755, 0.72431163, 0, 1.57079632, 1.74532925, 1.57079632, 1.74532925])
+        self.dex_limit_left_lo = np.array(
+            [
+                -1.04719755,
+                -0.72431163,
+                0.0,
+                -1.57079632,
+                -1.74532925,
+                -1.57079632,
+                -1.74532925,
+            ]
+        )
+        self.dex_limit_left_hi = np.array(
+            [1.04719755, 1.04719755, 1.74532925, 0, 0, 0, 0]
+        )
+        self.dex_limit_right_lo = np.array(
+            [-1.04719755, -1.04719755, -1.74532925, 0, 0, 0, 0]
+        )
+        self.dex_limit_right_hi = np.array(
+            [1.04719755, 0.72431163, 0, 1.57079632, 1.74532925, 1.57079632, 1.74532925]
+        )
 
         self.dex_effort = np.array([2.45, 1.40, 1.40, 1.40, 1.40, 1.40, 1.40])
         self.max_dex_angles = self.dex_effort / kp
@@ -110,43 +134,61 @@ class DexNode(Node):
 
     def left_dex_hand_cb(self, msg: HandState):
         self.left_hand_pos[:] = np.array([msg.motor_state[i].q for i in range(7)])
-        self.left_hand_temp[:] = np.array([msg.motor_state[i].temperature[1] for i in range(7)])
-        self.max_dex_left_angle_factor[(self.left_hand_temp > 80) & (self.left_hand_temp <= 100)] = 0.5
+        self.left_hand_temp[:] = np.array(
+            [msg.motor_state[i].temperature[1] for i in range(7)]
+        )
+        self.max_dex_left_angle_factor[
+            (self.left_hand_temp > 80) & (self.left_hand_temp <= 100)
+        ] = 0.5
         self.max_dex_left_angle_factor[(self.left_hand_temp > 100)] = 0.0
         self.max_dex_left_angle_factor[(self.left_hand_temp <= 80)] = 1.0
-        
 
     def right_dex_hand_cb(self, msg: HandState):
         self.right_hand_pos[:] = np.array([msg.motor_state[i].q for i in range(7)])
-        self.right_hand_temp[:] = np.array([msg.motor_state[i].temperature[1] for i in range(7)])
-        self.max_dex_right_angle_factor[(self.right_hand_temp > 80) & (self.right_hand_temp <= 100)] = 0.5
+        self.right_hand_temp[:] = np.array(
+            [msg.motor_state[i].temperature[1] for i in range(7)]
+        )
+        self.max_dex_right_angle_factor[
+            (self.right_hand_temp > 80) & (self.right_hand_temp <= 100)
+        ] = 0.5
         self.max_dex_right_angle_factor[(self.right_hand_temp > 100)] = 0.0
         self.max_dex_right_angle_factor[(self.right_hand_temp <= 80)] = 1.0
-        
 
     def control_dex_hands(self, target_q, factor=1):
         left_q = target_q[0:7] * factor
         right_q = target_q[7:14] * factor
-        left_q = np.clip(left_q.astype(self.left_hand_pos.dtype), self.left_hand_pos-self.max_dex_angles*self.max_dex_left_angle_factor, self.left_hand_pos+self.max_dex_angles*self.max_dex_left_angle_factor)
-        right_q = np.clip(right_q.astype(self.right_hand_pos.dtype), self.right_hand_pos-self.max_dex_angles*self.max_dex_right_angle_factor, self.right_hand_pos+self.max_dex_angles*self.max_dex_right_angle_factor)
-        
+        left_q = np.clip(
+            left_q.astype(self.left_hand_pos.dtype),
+            self.left_hand_pos - self.max_dex_angles * self.max_dex_left_angle_factor,
+            self.left_hand_pos + self.max_dex_angles * self.max_dex_left_angle_factor,
+        )
+        right_q = np.clip(
+            right_q.astype(self.right_hand_pos.dtype),
+            self.right_hand_pos - self.max_dex_angles * self.max_dex_right_angle_factor,
+            self.right_hand_pos + self.max_dex_angles * self.max_dex_right_angle_factor,
+        )
+
         for idx, id in enumerate(Dex3_1_Left_JointIndex):
-            self.left_hand_cmd.motor_cmd[id].q = float(left_q[idx])#np.clip(left_q[idx], self.dex_limit_left_lo[idx], self.dex_limit_left_hi[idx])
+            self.left_hand_cmd.motor_cmd[id].q = float(
+                left_q[idx]
+            )  # np.clip(left_q[idx], self.dex_limit_left_lo[idx], self.dex_limit_left_hi[idx])
         for idx, id in enumerate(Dex3_1_Right_JointIndex):
-            self.right_hand_cmd.motor_cmd[id].q = float(right_q[idx])#np.clip(right_q[idx], self.dex_limit_right_lo[idx], self.dex_limit_right_hi[idx])
+            self.right_hand_cmd.motor_cmd[id].q = float(
+                right_q[idx]
+            )  # np.clip(right_q[idx], self.dex_limit_right_lo[idx], self.dex_limit_right_hi[idx])
         self.left_dex_pub.publish(self.left_hand_cmd)
         self.right_dex_pub.publish(self.right_hand_cmd)
         # print('aaa')
 
     def dex_retarget(self, send_shm_name, recv_shm_name):
-        send_shm = shared_memory.SharedMemory(name=send_shm_name, size=165*4)
-        recv_shm = shared_memory.SharedMemory(name=recv_shm_name, size=14*4)
+        send_shm = shared_memory.SharedMemory(name=send_shm_name, size=165 * 4)
+        recv_shm = shared_memory.SharedMemory(name=recv_shm_name, size=14 * 4)
         send_shm_data = np.ndarray((165,), np.float32, send_shm.buf)
         recv_shm_data = np.ndarray((14,), np.float32, recv_shm.buf)
-        fix_pos_buf = np.zeros((14, ), dtype=np.float32)
-        tgt_hand_pos = np.zeros((14, ), dtype=np.float32)
+        fix_pos_buf = np.zeros((14,), dtype=np.float32)
+        tgt_hand_pos = np.zeros((14,), dtype=np.float32)
 
-        print('DEX SERVER INITIALIZED')
+        print("DEX SERVER INITIALIZED")
         try:
             while rclpy.ok():
                 start_time = time.time()
@@ -157,7 +199,9 @@ class DexNode(Node):
 
                 # Read left and right q_state from shared arrays
                 manual_data = send_shm_data[150:164]
-                if not np.all(left_hand_mat == 0.0): # if hand data has been initialized.
+                if not np.all(
+                    left_hand_mat == 0.0
+                ):  # if hand data has been initialized.
                     ref_left_value = left_hand_mat[unitree_tip_indices]
                     ref_right_value = right_hand_mat[unitree_tip_indices]
                     ref_left_value[0] = ref_left_value[0] * 1.15
@@ -166,11 +210,17 @@ class DexNode(Node):
                     ref_right_value[0] = ref_right_value[0] * 1.15
                     ref_right_value[1] = ref_right_value[1] * 1.05
                     ref_right_value[2] = ref_right_value[2] * 0.95
-                    left_q_target  = self.hand_retargeting.left_retargeting.retarget(ref_left_value)[[0,1,2,3,4,5,6]]
-                    right_q_target = self.hand_retargeting.right_retargeting.retarget(ref_right_value)[[0,1,2,3,4,5,6]]
+                    left_q_target = self.hand_retargeting.left_retargeting.retarget(
+                        ref_left_value
+                    )[[0, 1, 2, 3, 4, 5, 6]]
+                    right_q_target = self.hand_retargeting.right_retargeting.retarget(
+                        ref_right_value
+                    )[[0, 1, 2, 3, 4, 5, 6]]
 
                     # get dual hand action
-                    tgt_hand_pos[:] = np.concatenate((left_q_target, right_q_target)).astype(np.float32)
+                    tgt_hand_pos[:] = np.concatenate(
+                        (left_q_target, right_q_target)
+                    ).astype(np.float32)
                     if send_shm_data[164] < 1.5:
                         fix_pos_buf[:] = tgt_hand_pos[:]
 
@@ -187,16 +237,17 @@ class DexNode(Node):
                 # if time.monotonic() - start_time < 0.02:
                 #     time.sleep(max(0.02 - (time.monotonic() - start_time), 0.))
         except:
-            print('DEX SERVER DOWN')
+            print("DEX SERVER DOWN")
             import traceback
+
             traceback.print_exc()
-            
+
         finally:
             print("Dex3_1_Controller has been closed.")
 
 
 def start_dex_server(send_shm_name, recv_shm_name):
     rclpy.init(args=None)
-    
+
     node = DexNode()
     node.dex_retarget(send_shm_name, recv_shm_name)

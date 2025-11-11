@@ -32,10 +32,11 @@ from pytorch_kinematics import matrix_to_quaternion
 from threading import Thread
 
 import pytorch_kinematics as pk
-import numpy 
-import torch 
+import numpy
+import torch
 
 from g1_localization.pos_client import Position_Client
+
 
 def compute_fk_body_pos(joint_pos: np.ndarray):
     extend_body_parent_ids = [22, 29, 15]
@@ -44,20 +45,30 @@ def compute_fk_body_pos(joint_pos: np.ndarray):
     body_pos, body_quat = fk_dof(torch.from_numpy(joint_pos))
     body_quat = body_quat.roll(shifts=-1, dims=-1)
 
-    extend_curr_pos = my_quat_rotate(body_quat[extend_body_parent_ids].reshape(-1, 4),
-                                                            extend_body_pos.reshape(-1, 3)).view(
-        -1, 3) + body_pos[extend_body_parent_ids]
+    extend_curr_pos = (
+        my_quat_rotate(
+            body_quat[extend_body_parent_ids].reshape(-1, 4),
+            extend_body_pos.reshape(-1, 3),
+        ).view(-1, 3)
+        + body_pos[extend_body_parent_ids]
+    )
     body_pos_extend = torch.cat([body_pos, extend_curr_pos], dim=0)
-    body_quat_extend = torch.cat([body_quat, body_quat[extend_body_parent_ids[0]:extend_body_parent_ids[0]+1, :],
-                                  body_quat[extend_body_parent_ids[1]:extend_body_parent_ids[1]+1, :],
-                                  body_quat[extend_body_parent_ids[2]:extend_body_parent_ids[2]+1, :]])
+    body_quat_extend = torch.cat(
+        [
+            body_quat,
+            body_quat[extend_body_parent_ids[0] : extend_body_parent_ids[0] + 1, :],
+            body_quat[extend_body_parent_ids[1] : extend_body_parent_ids[1] + 1, :],
+            body_quat[extend_body_parent_ids[2] : extend_body_parent_ids[2] + 1, :],
+        ]
+    )
     return body_pos_extend, body_quat_extend
+
 
 def start_service(send_name, recv_name, vp_rotate_name):
     HW_DOF = 29
-    shm_send_shape = (3 + 4 + 4 + HW_DOF, )
-    shm_recv_shape = (3 + 4 + (HW_DOF + 1 + 3) * 3, )
-    vp_shape = (4, )
+    shm_send_shape = (3 + 4 + 4 + HW_DOF,)
+    shm_recv_shape = (3 + 4 + (HW_DOF + 1 + 3) * 3,)
+    vp_shape = (4,)
     send_shm = shared_memory.SharedMemory(name=send_name, size=shm_send_shape[0] * 4)
     recv_shm = shared_memory.SharedMemory(name=recv_name, size=shm_recv_shape[0] * 4)
     vp_shm = shared_memory.SharedMemory(name=vp_rotate_name, size=vp_shape[0] * 4)
@@ -68,8 +79,8 @@ def start_service(send_name, recv_name, vp_rotate_name):
     vp_data = np.ndarray(vp_shape, dtype=np.float32, buffer=vp_shm.buf)
 
     config = {
-        'port': 6006,
-        'server_ip': "192.168.123.164",
+        "port": 6006,
+        "server_ip": "192.168.123.164",
     }
     pos_client = Position_Client(config)
     pos_client.position = recv_shm_data[0:3]
@@ -79,7 +90,7 @@ def start_service(send_name, recv_name, vp_rotate_name):
 
     send_shm_data[7:11] = pos_client.delta_quat[:].numpy()
     pos_client.delta_quat = torch.from_numpy(send_shm_data[7:11])
-    
+
     recv_shm_data[3:7] = pos_client.quat[:]
     pos_client.quat = recv_shm_data[3:7]
 
@@ -87,7 +98,7 @@ def start_service(send_name, recv_name, vp_rotate_name):
 
     thread = Thread(target=pos_client.receive_process)
     thread.start()
-    
+
     quat = torch.from_numpy(send_shm_data[3:7])
     dof_pos = send_shm_data[11:]
     body_pos_extend_buf = torch.zeros(((HW_DOF + 1 + 3) * 3), dtype=torch.float32)
@@ -95,7 +106,9 @@ def start_service(send_name, recv_name, vp_rotate_name):
 
     while True:
         try:
-            body_pos_extend_buf, body_quat_extend_buf = compute_fk_body_pos(dof_pos.copy())
+            body_pos_extend_buf, body_quat_extend_buf = compute_fk_body_pos(
+                dof_pos.copy()
+            )
             # print(body_pos_extend_buf)
             num_bodies = body_pos_extend_buf.size(0)
             # vp_data = torch.from_numpy(np.array([vp_data[0], -vp_data[1], -vp_data[1], -vp_data[3]])) #wijk
@@ -104,24 +117,34 @@ def start_service(send_name, recv_name, vp_rotate_name):
             # rot_quat = torch_utils.rotation_between_quaternions(vp_data, quat_wijk)
             # rot_quat[:] = torch.roll(rot_quat, -1, 0)
             # body_pos_extend_buf = torch_utils.my_quat_rotate(quat[None, :].clone().repeat(num_bodies, 1), body_pos_extend_buf)
-            body_pos_extend_buf = my_quat_rotate(quat[None, :].clone().repeat(num_bodies, 1), body_pos_extend_buf)
-            body_pos_extend_buf[:] = body_pos_extend_buf[:] + location - (body_pos_extend_buf[-1, None] - body_pos_extend_buf[0:1])
-            body_pos_extend_buf[:, 2] = body_pos_extend_buf[:, 2] - torch.min(body_pos_extend_buf[:, 2])
+            body_pos_extend_buf = my_quat_rotate(
+                quat[None, :].clone().repeat(num_bodies, 1), body_pos_extend_buf
+            )
+            body_pos_extend_buf[:] = (
+                body_pos_extend_buf[:]
+                + location
+                - (body_pos_extend_buf[-1, None] - body_pos_extend_buf[0:1])
+            )
+            body_pos_extend_buf[:, 2] = body_pos_extend_buf[:, 2] - torch.min(
+                body_pos_extend_buf[:, 2]
+            )
             body_pos_extend[:] = body_pos_extend_buf.view(-1)
 
         except KeyboardInterrupt:
             return
         except:
-            print('ERRROOR')
+            print("ERRROOR")
             import traceback
+
             traceback.print_exc()
             return
 
+
 def start_service_denoise(send_name, recv_name, vp_rotate_name):
     HW_DOF = 29
-    shm_send_shape = (3 + 4 + 4 + HW_DOF, )
-    shm_recv_shape = (3 + 4 + (HW_DOF + 1 + 3) * 3, )
-    vp_shape = (4, )
+    shm_send_shape = (3 + 4 + 4 + HW_DOF,)
+    shm_recv_shape = (3 + 4 + (HW_DOF + 1 + 3) * 3,)
+    vp_shape = (4,)
     send_shm = shared_memory.SharedMemory(name=send_name, size=shm_send_shape[0])
     recv_shm = shared_memory.SharedMemory(name=recv_name, size=shm_recv_shape[0])
     vp_shm = shared_memory.SharedMemory(name=vp_rotate_name, size=vp_shape[0])
@@ -132,8 +155,8 @@ def start_service_denoise(send_name, recv_name, vp_rotate_name):
     vp_data = np.ndarray(vp_shape, dtype=np.float32, buffer=vp_shm.buf)
 
     config = {
-        'port': 6006,
-        'server_ip': "192.168.123.164",
+        "port": 6006,
+        "server_ip": "192.168.123.164",
     }
     pos_client = Position_Client(config)
     pos_client.ma_len = 3
@@ -144,7 +167,7 @@ def start_service_denoise(send_name, recv_name, vp_rotate_name):
 
     send_shm_data[7:11] = pos_client.delta_quat[:].numpy()
     pos_client.delta_quat = torch.from_numpy(send_shm_data[7:11])
-    
+
     recv_shm_data[3:7] = pos_client.quat[:]
     pos_client.quat = recv_shm_data[3:7]
 
@@ -152,7 +175,7 @@ def start_service_denoise(send_name, recv_name, vp_rotate_name):
 
     thread = Thread(target=pos_client.receive_process)
     thread.start()
-    
+
     quat = torch.from_numpy(send_shm_data[3:7])
     dof_pos = send_shm_data[11:]
     dof_pos_torch = torch.from_numpy(dof_pos)
@@ -160,32 +183,48 @@ def start_service_denoise(send_name, recv_name, vp_rotate_name):
     body_pos_extend_buf = torch.zeros(((HW_DOF + 1 + 3) * 3), dtype=torch.float32)
     body_pos_extend = torch.from_numpy(recv_shm_data[7:])
 
-    denoise_step_size = (3 + HW_DOF + 4)
+    denoise_step_size = 3 + HW_DOF + 4
     denoise_his_len = 50
-    location_seq = torch.zeros(denoise_step_size * 128, device='cpu', dtype=torch.float32)
-    denoise_model = torch.jit.load('legged_gym/logs/g1:teleop/g1_slam_denoiser/slam_denoiser_jit.pt')
+    location_seq = torch.zeros(
+        denoise_step_size * 128, device="cpu", dtype=torch.float32
+    )
+    denoise_model = torch.jit.load(
+        "legged_gym/logs/g1:teleop/g1_slam_denoiser/slam_denoiser_jit.pt"
+    )
 
     delta_t = 0.02
     target_fq = 50
-    
+
     cnt = 0
     time_cnt = time.monotonic()
     time_start = time.monotonic()
     while True:
         try:
-            body_pos_extend_buf, body_quat_extend_buf = compute_fk_body_pos(dof_pos.copy())
+            body_pos_extend_buf, body_quat_extend_buf = compute_fk_body_pos(
+                dof_pos.copy()
+            )
             num_bodies = body_pos_extend_buf.size(0)
-            body_pos_extend_buf = my_quat_rotate(quat[None, :].clone().repeat(num_bodies, 1), body_pos_extend_buf)
+            body_pos_extend_buf = my_quat_rotate(
+                quat[None, :].clone().repeat(num_bodies, 1), body_pos_extend_buf
+            )
 
             location_seq[denoise_step_size:] = location_seq[:-denoise_step_size].clone()
-            location_obs = location.clone()[0] + (body_pos_extend_buf[0] - body_pos_extend_buf[-1])
-            location_obs[..., 2] = 0.
-            location_obs = torch.cat((location_obs, dof_pos_torch.clone(), quat.clone()))
+            location_obs = location.clone()[0] + (
+                body_pos_extend_buf[0] - body_pos_extend_buf[-1]
+            )
+            location_obs[..., 2] = 0.0
+            location_obs = torch.cat(
+                (location_obs, dof_pos_torch.clone(), quat.clone())
+            )
             location_seq[:denoise_step_size] = location_obs
-            location_seq_de = denoise_model(location_seq[None, :denoise_step_size*denoise_his_len].clone()).cpu()[:, :3]
+            location_seq_de = denoise_model(
+                location_seq[None, : denoise_step_size * denoise_his_len].clone()
+            ).cpu()[:, :3]
 
             body_pos_extend_buf[:] = body_pos_extend_buf[:] + location_seq_de
-            body_pos_extend_buf[:, 2] = body_pos_extend_buf[:, 2] - torch.min(body_pos_extend_buf[:, 2])
+            body_pos_extend_buf[:, 2] = body_pos_extend_buf[:, 2] - torch.min(
+                body_pos_extend_buf[:, 2]
+            )
             body_pos_extend[:] = body_pos_extend_buf.view(-1)
 
             cnt += 1
@@ -195,7 +234,7 @@ def start_service_denoise(send_name, recv_name, vp_rotate_name):
                     delta_t += 2e-4
                 else:
                     delta_t -= 2e-4
-                print('DEN FREQ:', mean_freq)
+                print("DEN FREQ:", mean_freq)
                 cnt = 0
                 time_cnt = time.monotonic()
 
@@ -206,8 +245,8 @@ def start_service_denoise(send_name, recv_name, vp_rotate_name):
         except KeyboardInterrupt:
             return
         except:
-            print('ERRROOR')
+            print("ERRROOR")
             import traceback
+
             traceback.print_exc()
             return
-

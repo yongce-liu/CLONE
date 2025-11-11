@@ -9,29 +9,30 @@ import numpy as np
 from teleop.torch_utils import *
 
 
-
 class Position_Client:
-    def __init__(self, config: dict = None, Unit_Test = False):
-        self.server_ip = config['server_ip']
-        self.port = config['port']
+    def __init__(self, config: dict = None, Unit_Test=False):
+        self.server_ip = config["server_ip"]
+        self.port = config["port"]
         self.running = True
 
         self.ma_len = 10
         self.position_queue = []
 
-        self.position = np.array([0., 0., 0.], dtype=np.float32)
-        self.position_offset = np.array([0., 0., 0.], dtype=np.float32)
-        self.position_factor = np.array([1., 1., 1.], dtype=np.float32)
+        self.position = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        self.position_offset = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        self.position_factor = np.array([1.0, 1.0, 1.0], dtype=np.float32)
 
-        self.quat = np.array([0., 0., 0., 1.], dtype=np.float32)
-        self.delta_quat = torch.from_numpy(np.array([0., 0., 0., 1.], dtype=np.float32))
+        self.quat = np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float32)
+        self.delta_quat = torch.from_numpy(
+            np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float32)
+        )
 
         # Set up ZeroMQ context and socket
         self._context = zmq.Context()
         self._socket = self._context.socket(zmq.SUB)
         self._socket.connect(f"tcp://{self.server_ip}:{self.port}")
         self._socket.setsockopt_string(zmq.SUBSCRIBE, "")
-    
+
     def _close(self):
         self._socket.close()
         self._context.term()
@@ -70,10 +71,18 @@ class Position_Client:
                     position, quat = message
                     self.position_queue.append(position)
                     if len(self.position_queue) > self.ma_len:
-                        self.position_queue = self.position_queue[self.ma_len:]
+                        self.position_queue = self.position_queue[self.ma_len :]
                     position = sum(self.position_queue) / len(self.position_queue)
 
-                    self.position[:] = quat_rotate(self.delta_quat.unsqueeze(0), torch.from_numpy(position * self.position_factor).unsqueeze(0)) + self.position_offset
+                    self.position[:] = (
+                        quat_rotate(
+                            self.delta_quat.unsqueeze(0),
+                            torch.from_numpy(position * self.position_factor).unsqueeze(
+                                0
+                            ),
+                        )
+                        + self.position_offset
+                    )
                     self.quat[:] = quat
 
                 # if self._enable_performance_eval:
@@ -88,12 +97,10 @@ class Position_Client:
             self._close()
 
 
-
-
 if __name__ == "__main__":
     config = {
-        'port': 6006,
-        'server_ip': "192.168.123.164",
+        "port": 6006,
+        "server_ip": "192.168.123.164",
     }
-    pos_client = Position_Client(config) # deployment test
+    pos_client = Position_Client(config)  # deployment test
     pos_client.receive_process()

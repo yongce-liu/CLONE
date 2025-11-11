@@ -1,5 +1,5 @@
-VISION_WRAPPER_BACKEND = 'vuer' # vuer, avp_stream
-VISION_PRO_IP = '0.0.0.0'
+VISION_WRAPPER_BACKEND = "vuer"  # vuer, avp_stream
+VISION_PRO_IP = "0.0.0.0"
 VISION_PRO_DELTA_H = -0.54
 
 USE_DEX_HANDS = False
