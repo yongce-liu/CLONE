@@ -105,7 +105,7 @@ class Position_Server:
 
 if __name__ == "__main__":
     config = {
-        "port": 600600,
+        "port": 60060,
         "server_ip": "192.168.123.164",
     }
     pos_server = Position_Server(config)
