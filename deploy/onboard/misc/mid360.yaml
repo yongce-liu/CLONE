@@ -17,8 +17,8 @@ mapping:
     det_range:     100.0
     extrinsic_T: [ -0.011, -0.02329, 0.04412 ]
     extrinsic_R: [ 1, 0, 0,
-                   0, 1, 0,
-                   0, 0, 1]
+                   0, -1, 0,
+                   0, 0, -1]
 
 publish:     
     scan_publish_en:  true       # 'false' will close all the point cloud output
