@@ -79,7 +79,7 @@ def start_service(send_name, recv_name, vp_rotate_name):
     vp_data = np.ndarray(vp_shape, dtype=np.float32, buffer=vp_shm.buf)
 
     config = {
-        "port": 6006,
+        "port": 60060,
         "server_ip": "192.168.123.164",
     }
     pos_client = Position_Client(config)
@@ -155,7 +155,7 @@ def start_service_denoise(send_name, recv_name, vp_rotate_name):
     vp_data = np.ndarray(vp_shape, dtype=np.float32, buffer=vp_shm.buf)
 
     config = {
-        "port": 6006,
+        "port": 60060,
         "server_ip": "192.168.123.164",
     }
     pos_client = Position_Client(config)

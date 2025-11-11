@@ -153,7 +153,7 @@ if __name__ == "__main__":
     # 因为 ROS 2 的初始化和关闭都移动到了子进程 PositionNode.start_main_loop 中。
 
     config = {
-        "port": 6006,
+        "port": 60060,
         "server_ip": "192.168.123.164",
     }
 

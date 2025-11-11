@@ -99,7 +99,7 @@ class Position_Client:
 
 if __name__ == "__main__":
     config = {
-        "port": 6006,
+        "port": 60060,
         "server_ip": "192.168.123.164",
     }
     pos_client = Position_Client(config)  # deployment test
