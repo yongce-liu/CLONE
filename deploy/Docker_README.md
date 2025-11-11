@@ -68,7 +68,7 @@ docker compose up -d
 Now enter the container and start the publisher (G1 and the localization server on G1 should be running):
 ```bash
 docker exec -it clone_unitree_server bash
-python3 deploy/lowcmd_publisher.py
+python3 lowcmd_publisher.py
 ```
 
 Download the app streamer from the [Apple Developer Website](https://developer.apple.com/streaming/app-streaming/) and run it on the Apple Vision Pro.
@@ -78,7 +78,7 @@ Keep the previous terminal running and now start the policy server from another 
 
 ```bash
 docker exec -it clone_unitree_server bash
-python3 deploy/g1_server.py
+python3 g1_server.py
 ```
 
 You should be good to go now. :-) enjoy!

@@ -4,18 +4,18 @@ import yaml
 from enum import Enum
 
 class HandType(Enum):
-    INSPIRE_HAND = "deploy/resources/inspire_hand/inspire_hand.yml"
-    UNITREE_DEX3 = "deploy/resources/unitree_hand/unitree_dex3.yml"
-    UNITREE_DEX3_Unit_Test = "deploy/resources/unitree_hand/unitree_dex3.yml"
+    INSPIRE_HAND = "resources/inspire_hand/inspire_hand.yml"
+    UNITREE_DEX3 = "resources/unitree_hand/unitree_dex3.yml"
+    UNITREE_DEX3_Unit_Test = "resources/unitree_hand/unitree_dex3.yml"
 
 class HandRetargeting:
     def __init__(self, hand_type: HandType):
         if hand_type == HandType.UNITREE_DEX3:
-            RetargetingConfig.set_default_urdf_dir('deploy/resources')
+            RetargetingConfig.set_default_urdf_dir('resources')
         elif hand_type == HandType.UNITREE_DEX3_Unit_Test:
-            RetargetingConfig.set_default_urdf_dir('deploy/resources')
+            RetargetingConfig.set_default_urdf_dir('resources')
         elif hand_type == HandType.INSPIRE_HAND:
-            RetargetingConfig.set_default_urdf_dir('deploy/resources')
+            RetargetingConfig.set_default_urdf_dir('resources')
 
         config_file_path = Path(hand_type.value)
 

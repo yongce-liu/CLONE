@@ -20,6 +20,9 @@ services:
       - XAUTHORITY=/root/.Xauthority
       # - ROS_DOMAIN_ID=0
       # - ROS_LOCALHOST_ONLY=0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
     devices:
       - /dev/bus/usb:/dev/bus/usb
+    runtime: nvidia
     command: /bin/bash

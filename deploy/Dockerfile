@@ -158,8 +158,8 @@ RUN pip3 install pyzmq
 RUN touch ${HOME}/.selfshrc
 RUN echo "# ROS2 Environment Setup" >> ${HOME}/.selfshrc && \
     echo "source /opt/ros/foxy/setup.sh" >> ${HOME}/.selfshrc && \
-    # echo "source /root/unitree_ros2/cyclonedds_ws/install/setup.sh" >> ${HOME}/.selfshrc && \
-    # echo "source /root/unitree_ros2/install/setup.sh" >> ${HOME}/.selfshrc && \
+    echo "source /root/unitree_ros2/cyclonedds_ws/install/setup.sh" >> ${HOME}/.selfshrc && \
+    echo "source /root/unitree_ros2/install/setup.sh" >> ${HOME}/.selfshrc && \
     # echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ${HOME}/.selfshrc && \
     # echo "export PYTHONPATH=/root/ws:/root/ws/VisionWrapper:\$PYTHONPATH" >> ${HOME}/.selfshrc && \
     echo "# Aliases for convenience" >> ${HOME}/.selfshrc && \

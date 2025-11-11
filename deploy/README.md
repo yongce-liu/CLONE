@@ -57,12 +57,12 @@ Connect via NoMachine on your PC and configure Wi-Fi. Select **ROS1 (Noetic)** i
    [FAST_LIO_LOCALIZATION](https://github.com/HViktorTsoi/FAST_LIO_LOCALIZATION)
 
 ### Deploy Onboard Files
-Copy contents of `deploy/onboard` to G1's PC2. Edit `localization_server.sh`'s first line to:  
+Copy contents of `onboard` to G1's PC2. Edit `localization_server.sh`'s first line to:  
 ```bash
 cd <PATH_TO_YOUR_FAST_LIO_LOCALIZATION_FOLDER>
 ```
 ### FAQ
-If you encountered **missing files** such as `localization_mid360.launch` or `mid360.yaml`, check `deploy/onboard/launch` for onboard **ROS launch files** and `deploy/onboard/misc` for `mid360.yaml`.
+If you encountered **missing files** such as `localization_mid360.launch` or `mid360.yaml`, check `onboard/launch` for onboard **ROS launch files** and `onboard/misc` for `mid360.yaml`.
 
 ---
 
@@ -91,11 +91,11 @@ pip install -e .
 2. **On Apple Vision Pro:** (for `avp_stream` users) Launch Tracking Streamer 
 3. **On Server PC:** Run command publisher for 1kHz relay.
    ```bash
-   python deploy/lowcmd_publisher.py
+   python lowcmd_publisher.py
    ```
 4. **On Server PC:** Run deployment script  
    ```bash
-   python deploy/g1_server.py
+   python g1_server.py
    ```
 5. **On Apple Vision Pro:** (for For `VUER` Users) Access control interface at  
    `https://<SERVER_IP>:8012?ws=wss://<SERVER_IP>:8012` 

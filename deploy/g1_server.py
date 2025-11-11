@@ -19,7 +19,7 @@ import time
 from collections import deque
 from multiprocessing import Process, shared_memory, Array
 
-from VisionWrapper.vision_wrapper import VisionWrapper
+from vision_wrapper import VisionWrapper
 from teleop.local2word import fk_dof
 from multiprocessing import Process, shared_memory
 from teleop.image_server.image_client import ImageClient
@@ -263,7 +263,7 @@ class G1():
 
         device = torch.device("cpu")
         curr_start, num_motions, motion_id, motion_acc, time_step, dt, paused = 0, 1, 0, set(), 0, 1/30, False
-        humanoid_xml = "deploy/resources/g1.xml"
+        humanoid_xml = "resources/g1.xml"
 
         self.mj_model = mujoco.MjModel.from_xml_path(humanoid_xml)
         self.mj_data = mujoco.MjData(self.mj_model)
