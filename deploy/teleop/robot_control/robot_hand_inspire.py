@@ -2,7 +2,6 @@
 from unitree_dds_wrapper.idl import unitree_go
 from unitree_dds_wrapper.publisher import Publisher
 from unitree_dds_wrapper.subscription import Subscription
-from legged_gym.teleop.open_television.constants import inspire_tip_indices
 from legged_gym.teleop.robot_control.hand_retargeting import HandRetargeting, HandType
 import numpy as np
 import threading

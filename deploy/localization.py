@@ -20,7 +20,6 @@ import time
 from collections import deque
 from multiprocessing import Process, shared_memory, Array
 
-from teleop.open_television.tv_wrapper import TeleVisionWrapper
 from teleop.local2word import fk_dof
 from multiprocessing import Process, shared_memory
 from teleop.image_server.image_client import ImageClient
